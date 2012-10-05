@@ -1,14 +1,14 @@
 package edu.washington.cs.knowitall
 package tool.extractor
 
-import tool.stem.Lemmatized
+import edu.washington.cs.knowitall.tool.stem.Lemmatized
 import scala.collection.JavaConverters._
-import tool.chunk.ChunkedToken
-import collection.immutable.Interval
-import regex.Match
-import regex.RegularExpression
+import edu.washington.cs.knowitall.tool.chunk.ChunkedToken
+import edu.washington.cs.knowitall.collection.immutable.Interval
+import edu.washington.cs.knowitall.regex.Match
+import edu.washington.cs.knowitall.regex.RegularExpression
 import edu.washington.cs.knowitall.tool.chunk.OpenNlpChunker
-import tool.stem.MorphaStemmer
+import edu.washington.cs.knowitall.tool.stem.MorphaStemmer
 import RelationalNounExtractor._
 
 class RelationalNounExtractor(val encloseInferredWords: Boolean = true) {
@@ -325,8 +325,6 @@ object RelationalNounExtractor {
         adj.tokens.iterator.asScala.map(_.token.string).mkString(" ")
       }
       
-      println(adjective)
-
       val relation = new ExtractionPart(intervalFromGroup(m.group("pred")), inferredIs +
         adjective.map(" " + _ + " ").getOrElse(" ") +
         m.group("pred").tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + inferredOf)

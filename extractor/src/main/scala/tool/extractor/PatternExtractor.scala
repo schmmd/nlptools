@@ -1,19 +1,19 @@
 package edu.washington.cs.knowitall
 package tool.extractor
 
-import com.google.common.base.{ Function => GuavaFunction }
-import scala.collection.JavaConverters._
-import regex.RegularExpression
-import regex.Match
 import java.util.regex.Pattern
-import tool.stem.Lemmatized
-import tool.chunk.ChunkedToken
-import edu.washington.cs.knowitall.regex.Expression
+
+import scala.collection.JavaConverters._
+
+import com.google.common.base.{Function => GuavaFunction}
+
+import edu.washington.cs.knowitall.logic.{Expression => LExpression}
 import edu.washington.cs.knowitall.logic.LogicExpression
-import edu.washington.cs.knowitall.logic.{ Expression => LExpression }
-import edu.washington.cs.knowitall.logic.ArgFactory
-import com.google.common.base.Predicate
-import PatternExtractor.Token
+import edu.washington.cs.knowitall.regex.Expression
+import edu.washington.cs.knowitall.regex.Match
+import edu.washington.cs.knowitall.regex.RegularExpression
+import edu.washington.cs.knowitall.tool.chunk.ChunkedToken
+import edu.washington.cs.knowitall.tool.stem.Lemmatized
 
 object PatternExtractor {
   type Token = Lemmatized[ChunkedToken]
@@ -59,10 +59,10 @@ object PatternExtractor {
     })
 }
 
-abstract class BinaryPatternExtractor[B](val expression: RegularExpression[Token]) extends Extractor[Seq[Token], B]{
+abstract class BinaryPatternExtractor[B](val expression: RegularExpression[PatternExtractor.Token]) extends Extractor[Seq[PatternExtractor.Token], B]{
   def this(pattern: String) = this(PatternExtractor.compile(pattern))
 
-  def apply(tokens: Seq[Token]): Iterable[B] = {
+  def apply(tokens: Seq[PatternExtractor.Token]): Iterable[B] = {
     val matches = expression.findAll(tokens.asJava);
     
     for (
@@ -74,5 +74,5 @@ abstract class BinaryPatternExtractor[B](val expression: RegularExpression[Token
 
   protected def filterExtraction(extraction: B): Boolean = false
 
-  protected def buildExtraction(tokens: Seq[Token], m: Match[Token]): B
+  protected def buildExtraction(tokens: Seq[PatternExtractor.Token], m: Match[PatternExtractor.Token]): B
 }
