@@ -14,4 +14,7 @@ case class ExtractionPart(interval: Interval, text: String) {
 
 case class BinaryExtraction(arg1: ExtractionPart, rel: ExtractionPart, arg2: ExtractionPart) {
   override def toString = Iterable(arg1, rel, arg2).mkString("(", "; ", ")")
+  
+  def text = Iterable(arg1.text, rel.text, arg2.text).mkString(" ")
+  def interval = Interval.span(Iterable(arg1.interval, rel.interval, arg2.interval))
 }

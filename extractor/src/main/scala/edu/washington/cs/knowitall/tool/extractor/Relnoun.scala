@@ -9,17 +9,17 @@ import edu.washington.cs.knowitall.regex.Match
 import edu.washington.cs.knowitall.regex.RegularExpression
 import edu.washington.cs.knowitall.tool.chunk.OpenNlpChunker
 import edu.washington.cs.knowitall.tool.stem.MorphaStemmer
-import RelationalNounExtractor._
+import Relnoun._
 
-class RelationalNounExtractor(val encloseInferredWords: Boolean = true) {
+class Relnoun(val encloseInferredWords: Boolean = true) {
   val subextractors: Seq[BinaryPatternExtractor[BinaryExtraction]] = Seq(
-      new AppositiveExtractor(this.encloseInferredWords, RelationalNounExtractor.nouns),
-      new AdjectiveDescriptorExtractor(this.encloseInferredWords, RelationalNounExtractor.nouns),
-      new PossessiveExtractor(this.encloseInferredWords, RelationalNounExtractor.nouns),
-      new PossessiveAppositiveExtractor(this.encloseInferredWords, RelationalNounExtractor.nouns),
-      new OfIsExtractor(this.encloseInferredWords, RelationalNounExtractor.nouns),
-      new PossessiveReverseExtractor(this.encloseInferredWords, RelationalNounExtractor.nouns),
-      new ProperNounAdjectiveExtractor(this.encloseInferredWords, RelationalNounExtractor.nouns))
+      new AppositiveExtractor(this.encloseInferredWords, Relnoun.nouns),
+      new AdjectiveDescriptorExtractor(this.encloseInferredWords, Relnoun.nouns),
+      new PossessiveExtractor(this.encloseInferredWords, Relnoun.nouns),
+      new PossessiveAppositiveExtractor(this.encloseInferredWords, Relnoun.nouns),
+      new OfIsExtractor(this.encloseInferredWords, Relnoun.nouns),
+      new PossessiveReverseExtractor(this.encloseInferredWords, Relnoun.nouns),
+      new ProperNounAdjectiveExtractor(this.encloseInferredWords, Relnoun.nouns))
   
   def apply(tokens: Seq[Lemmatized[ChunkedToken]]): Seq[BinaryExtraction] = {
     for (
@@ -29,20 +29,9 @@ class RelationalNounExtractor(val encloseInferredWords: Boolean = true) {
   }
 }
 
-object RelationalNounExtractor {
+object Relnoun {
     type Token = Lemmatized[ChunkedToken]
-    
-     def intervalFromGroup(group: Match.Group[_]): Interval = {
-        val startIndex = group.startIndex()
-        val endIndex = group.endIndex() + 1
 
-        if (startIndex == -1 || endIndex == -1) {
-            Interval.empty
-        }
-        else {
-            Interval.open(startIndex, endIndex)
-        }
-    }
 
     val properNounChunk = "(?:<chunk=\"B-NP\" & pos=\"NNPS?\"> <chunk=\"I-NP\">*) | (?:<chunk=\"B-NP\"> <chunk=\"I-NP\">* <chunk=\"I-NP\" & pos=\"NNPS?\"> <chunk=\"I-NP\">*)";
 
@@ -277,9 +266,9 @@ object RelationalNounExtractor {
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(1))),
-        new ExtractionPart(intervalFromGroup(m.groups().get(2)), this.inferredIs + " " + m.groups().get(2).tokens().asScala.map(_.token.string).mkString(" ")),
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(3))))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(1))),
+        new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups().get(2)), this.inferredIs + " " + m.groups().get(2).tokens().asScala.map(_.token.string).mkString(" ")),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(3))))
     }
   }
 
@@ -325,15 +314,15 @@ object RelationalNounExtractor {
         adj.tokens.iterator.asScala.map(_.token.string).mkString(" ")
       }
       
-      val relation = new ExtractionPart(intervalFromGroup(m.group("pred")), inferredIs +
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.group("pred")), inferredIs +
         adjective.map(" " + _ + " ").getOrElse(" ") +
         m.group("pred").tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + inferredOf)
 
       val arg2Group = m.group("arg2");
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.group("arg1"))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.group("arg1"))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(arg2Group)))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(arg2Group)))
     }
   }
 
@@ -364,12 +353,12 @@ object RelationalNounExtractor {
     private val inferredOf = if (encloseInferredWords) "[of]" else "of"
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
-      val relation = new ExtractionPart(intervalFromGroup(m.groups().get(2)), inferredIs + " " + m.groups().get(2).tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + inferredOf)
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups().get(2)), inferredIs + " " + m.groups().get(2).tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + inferredOf)
       
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups.get(3))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups.get(3))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(m.groups.get(1))))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups.get(1))))
     }
   }
 
@@ -400,11 +389,11 @@ object RelationalNounExtractor {
     private val inferredOf = if (encloseInferredWords) "[of]" else "of"
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
-      val relation = new ExtractionPart(intervalFromGroup(m.groups.get(2)), inferredIs + " " + m.groups.get(2).tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + inferredOf)
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups.get(2)), inferredIs + " " + m.groups.get(2).tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + inferredOf)
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups.get(3))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups.get(3))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(m.groups.get(1))))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups.get(1))))
     }
   }
 
@@ -434,11 +423,11 @@ object RelationalNounExtractor {
     private val inferredOf = if (encloseInferredWords) "[of]" else "of"
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
-      val relation = new ExtractionPart(intervalFromGroup(m.groups().get(2)), m.groups().get(3).tokens.iterator.asScala.mkString(" ") + " " + m.groups().get(2).tokens.iterator.asScala.mkString(" ") + " " + inferredOf)
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups().get(2)), m.groups().get(3).tokens.iterator.asScala.mkString(" ") + " " + m.groups().get(2).tokens.iterator.asScala.mkString(" ") + " " + inferredOf)
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups.get(4))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups.get(4))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(m.groups.get(1))));
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups.get(1))));
     }
   }
 
@@ -468,11 +457,11 @@ object RelationalNounExtractor {
     private val inferredOf = if (encloseInferredWords) "[of]" else "of"
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
-      val relation = new ExtractionPart(intervalFromGroup(m.groups().get(4)), m.groups().get(2).tokens.iterator.asScala.mkString(" ") + " " + m.groups().get(4).tokens.iterator.asScala.mkString(" ") + " " + inferredOf)
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups().get(4)), m.groups().get(2).tokens.iterator.asScala.mkString(" ") + " " + m.groups().get(4).tokens.iterator.asScala.mkString(" ") + " " + inferredOf)
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(1))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(1))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(3))))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(3))))
     }
   }
 
@@ -496,11 +485,11 @@ object RelationalNounExtractor {
     extends BinaryPatternExtractor[BinaryExtraction](OfIsExtractor.pattern.replace("${relnoun}", nouns.mkString("|"))) {
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
-      val relation = new ExtractionPart(intervalFromGroup(m.groups().get(1)), m.groups().get(3).tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + m.groups().get(1).tokens.iterator.asScala.map(_.token.string).mkString(" "))
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups().get(1)), m.groups().get(3).tokens.iterator.asScala.map(_.token.string).mkString(" ") + " " + m.groups().get(1).tokens.iterator.asScala.map(_.token.string).mkString(" "))
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(4))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(4))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(2))))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(2))))
     }
   }
 
@@ -527,11 +516,11 @@ object RelationalNounExtractor {
     private val inferredOf = if (encloseInferredWords) "[of]" else "of"
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
-      val relation = new ExtractionPart(intervalFromGroup(m.groups().get(3)), inferredIs + " " + m.groups().get(3).tokens.iterator.asScala.mkString(" ") + " " + inferredOf);
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups().get(3)), inferredIs + " " + m.groups().get(3).tokens.iterator.asScala.mkString(" ") + " " + inferredOf);
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(1))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(1))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(2))))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(2))))
     }
   }
 
@@ -565,11 +554,11 @@ object RelationalNounExtractor {
     private val inferredOf = if (encloseInferredWords) "[of]" else "of"
 
     override def buildExtraction(tokens: Seq[Token], m: Match[Token]) = {
-      val relation = new ExtractionPart(intervalFromGroup(m.groups().get(4)), inferredIs + " " + (m.groups().get(2).tokens.iterator.asScala.map(_.token.string) ++ m.groups().get(4).tokens.iterator.asScala.map(_.token.string)).mkString(" ") + " " + inferredOf)
+      val relation = new ExtractionPart(PatternExtractor.intervalFromGroup(m.groups().get(4)), inferredIs + " " + (m.groups().get(2).tokens.iterator.asScala.map(_.token.string) ++ m.groups().get(4).tokens.iterator.asScala.map(_.token.string)).mkString(" ") + " " + inferredOf)
       new BinaryExtraction(
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(1))),
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(1))),
         relation,
-        new ExtractionPart(tokens, intervalFromGroup(m.groups().get(3))))
+        new ExtractionPart(tokens, PatternExtractor.intervalFromGroup(m.groups().get(3))))
     }
   }
 
@@ -583,8 +572,8 @@ object RelationalNounExtractor {
   }
 
   def main(args: Array[String]) {
-    System.out.println("Creating the relation extractor... ")
-    val relnoun = new RelationalNounExtractor()
+    System.out.println("Creating the relational noun extractor... ")
+    val relnoun = new Relnoun()
 
     if (args.length > 0 && (args(0) equals "--pattern")) {
       for (extractor <- relnoun.subextractors) {
@@ -598,7 +587,7 @@ object RelationalNounExtractor {
       System.out.println("Please enter a sentence:")
 
       try {
-        for (line <- io.Source.stdin.getLines) {
+        for (line <- scala.io.Source.stdin.getLines) {
           val chunked = chunker.chunk(line);
           val tokens = chunked map stemmer.lemmatizeToken
 

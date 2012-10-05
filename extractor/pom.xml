@@ -29,6 +29,11 @@
       <version>1.0.2</version>
     </dependency>
     <dependency>
+      <groupId>edu.washington.cs.knowitall</groupId>
+      <artifactId>reverb-core</artifactId>
+      <version>1.4.0</version>
+    </dependency>
+    <dependency>
       <groupId>edu.washington.cs.knowitall.nlptools</groupId>
       <artifactId>nlptools-core_2.9.2</artifactId>
       <version>${project.version}</version>
@@ -42,6 +47,11 @@
       <groupId>edu.washington.cs.knowitall.nlptools</groupId>
       <artifactId>nlptools-stem-morpha_2.9.2</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.washington.cs.knowitall</groupId>
+      <artifactId>morpha-stemmer</artifactId>
+      <version>1.0.4</version>
     </dependency>
   </dependencies>
 </project>
